@@ -38,12 +38,19 @@ def analyze_sentiment(text: str) -> str:
 # Эндпоинт POST /reviews
 @app.route('/reviews', methods=['POST'])
 def add_review():
-    data = request.get_json()
 
-    if not data or 'text' not in data:
+    try:
+        data = request.get_json(force=True)
+    except Exception:
+        return jsonify({'error': 'Invalid JSON format'}), 400
+
+    text = data.get('text')
+    if text is None:
         return jsonify({'error': 'Missing "text" field'}), 400
 
-    text = data['text']
+    if not isinstance(text, str) or not text.strip():
+        return jsonify({'error': '"text" field cannot be empty'}), 400
+
     sentiment =  data.get('sentiment') or analyze_sentiment(text)
     created_at = datetime.now(timezone.utc).isoformat()
 
