@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, Response
 import json
 import sqlite3
 from datetime import datetime, timezone
-import os
+
 
 app = Flask(__name__)
 DB_NAME = 'reviews.db'
@@ -44,7 +44,7 @@ def add_review():
         return jsonify({'error': 'Missing "text" field'}), 400
 
     text = data['text']
-    sentiment = analyze_sentiment(text)
+    sentiment =  data.get('sentiment') or analyze_sentiment(text)
     created_at = datetime.now(timezone.utc).isoformat()
 
     conn = sqlite3.connect(DB_NAME)
@@ -70,7 +70,7 @@ def add_review():
     )
 
 # Эндпоинт GET /reviews
-#TODO Дописать фильтрацию по другим тональностям в отзыве (neutral, positive)
+# TODO Дописать фильтрацию по другим тональностям в отзыве (neutral, positive)
 @app.route('/reviews', methods=['GET'])
 def get_reviews():
     sentiment_filter = request.args.get('sentiment')
