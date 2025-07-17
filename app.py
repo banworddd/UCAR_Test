@@ -69,6 +69,30 @@ def add_review():
         content_type='application/json'
     )
 
+# Эндпоинт GET /reviews
+#TODO Дописать фильтрацию по другим тональностям в отзыве (neutral, positive)
+@app.route('/reviews', methods=['GET'])
+def get_reviews():
+    sentiment_filter = request.args.get('sentiment')
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    if sentiment_filter:
+        cursor.execute('SELECT * FROM reviews WHERE sentiment = ?', (sentiment_filter,))
+    else:
+        cursor.execute('SELECT * FROM reviews')
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    reviews = [dict(row) for row in rows]
+
+    return Response(
+        json.dumps(reviews, ensure_ascii=False),
+        content_type='application/json'
+    )
+
 # Запуск приложения
 if __name__ == '__main__':
     init_db()
